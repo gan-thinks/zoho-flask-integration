@@ -19,7 +19,7 @@ def handle_webflow_form():
     data = request.form
 
     # Extract all fields from Webflow form
-   \form_data = {
+   form_data = {
     "First_Name": data.get("first-name"),
     "Last_Name": data.get("last-name"),
     "Email": data.get("email"),
