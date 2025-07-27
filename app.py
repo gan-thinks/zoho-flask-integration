@@ -19,19 +19,20 @@ def handle_webflow_form():
     data = request.form
 
     # Extract all fields from Webflow form
-    form_data = {
-        "First_Name": data.get("first_name"),
-        "Last_Name": data.get("last_name"),
-        "Email": data.get("email"),
-        "Chief_Health_Objective": data.get("chief_health_objective"),
-        "Category_Resort": data.get("category_resort"),
-        "Wish_to_Travel": data.get("wish_to_travel"),
-        "Mobile": data.get("mobile_phone_number"),
-        "Time_Wellness": data.get("time_wellness"),
-        "Resort": data.get("resort"),
-        "Visa": data.get("visa"),
-        "Message": data.get("message")
-    }
+   \form_data = {
+    "First_Name": data.get("first-name"),
+    "Last_Name": data.get("last-name"),
+    "Email": data.get("email"),
+    "Chief_Health_Objective": data.get("chief-health-objective"),
+    "Category_Resort": data.get("category-resort"),
+    "Wish_to_Travel": data.get("wish-to-travel"),
+    "Mobile": data.get("mobile-phone-number"),
+    "Time_Wellness": data.get("time-wellness"),
+    "Resort": data.get("resort"),
+    "Visa": data.get("visa"),
+    "Message": data.get("message")
+}
+
 
     # Remove None values to avoid errors
     clean_data = {k: v for k, v in form_data.items() if v is not None}
