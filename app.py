@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 @app.route("/", methods=["GET"])
 def home():
@@ -12,22 +12,14 @@ def home():
 def submit_form():
     try:
         print("✅ Received a POST request to /submit")
+        print("📩 Raw form data:", request.form)
 
-        # Log raw data
-        print("Raw form data:", request.form)
-
-        # Extract form data
-        name = request.form.get("name")
+        # Only extract the email field
         email = request.form.get("email")
-        phone = request.form.get("phone")
-        message = request.form.get("message")
+        print(f"📧 Received Email: {email}")
 
-        print(f"Parsed Form Data ➡️ Name: {name}, Email: {email}, Phone: {phone}, Message: {message}")
-
-        # You can do something here like send to Zoho CRM
-
-        # Webflow needs a 200 response to show success message
-        return jsonify({"status": "success", "message": "Form submitted successfully ✅"}), 200
+        # Return success response
+        return jsonify({"status": "success", "message": "Email received ✅"}), 200
 
     except Exception as e:
         print("❌ Error while processing form:", str(e))
