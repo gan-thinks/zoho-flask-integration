@@ -58,7 +58,8 @@ def handle_webflow_form():
     print("📬 Zoho response:", response.status_code, response.text)
 
     if response.status_code == 201:
-        return jsonify({"message": "✅ Lead added to Zoho CRM"}), 201
+       return "Success from Flask!", 200
+
     else:
         return jsonify({
             "message": "❌ Failed to add lead to Zoho CRM",
