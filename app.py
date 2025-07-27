@@ -1,69 +1,55 @@
-import os
-import requests
 from flask import Flask, request, jsonify
+import requests
+import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 
-# Function to get a fresh Zoho access token
-def get_access_token():
-    url = "https://accounts.zoho.in/oauth/v2/token"
-    data = {
-        "refresh_token": os.getenv("ZOHO_REFRESH_TOKEN"),
-        "client_id": os.getenv("ZOHO_CLIENT_ID"),
-        "client_secret": os.getenv("ZOHO_CLIENT_SECRET"),
-        "grant_type": "refresh_token"
+ZOHO_ACCESS_TOKEN = os.getenv("ZOHO_ACCESS_TOKEN")
+ZOHO_API_URL = "https://www.zohoapis.in/crm/v2/Leads"
+
+@app.route('/webflow-form', methods=['POST'])
+def handle_webflow_form():
+    data = request.form
+
+    # Extract all fields from Webflow form
+    form_data = {
+        "First_Name": data.get("first_name"),
+        "Last_Name": data.get("last_name"),
+        "Email": data.get("email"),
+        "Chief_Health_Objective": data.get("chief_health_objective"),
+        "Category_Resort": data.get("category_resort"),
+        "Wish_to_Travel": data.get("wish_to_travel"),
+        "Mobile": data.get("mobile_phone_number"),
+        "Time_Wellness": data.get("time_wellness"),
+        "Resort": data.get("resort"),
+        "Visa": data.get("visa"),
+        "Message": data.get("message")
     }
-    response = requests.post(url, data=data)
-    response.raise_for_status()
-    return response.json()["access_token"]
 
-# Route to receive form submissions from Webflow and push to Zoho
-@app.route('/submit', methods=['POST'])
-def submit_to_zoho():
-    try:
-        # Get access token
-        access_token = get_access_token()
+    # Remove None values to avoid errors
+    clean_data = {k: v for k, v in form_data.items() if v is not None}
 
-        # Get form data (from Webflow form)
-        form_data = request.form
+    zoho_payload = {
+        "data": [clean_data]
+    }
 
-        # Construct Zoho Lead payload
-        lead_data = {
-            "data": [
-                {
-                    "Company": form_data.get("company", "Webflow Lead"),
-                    "Last_Name": form_data.get("last_name", "Unknown"),
-                    "First_Name": form_data.get("first_name", ""),
-                    "Email": form_data.get("email", ""),
-                    "Phone": form_data.get("phone", "")
-                }
-            ]
-        }
+    headers = {
+        "Authorization": f"Zoho-oauthtoken {ZOHO_ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
 
-        # Zoho API endpoint
-        url = f"{os.getenv('ZOHO_API_DOMAIN')}/crm/v2/Leads"
+    response = requests.post(ZOHO_API_URL, headers=headers, json=zoho_payload)
 
-        # Headers
-        headers = {
-            "Authorization": f"Zoho-oauthtoken {access_token}",
-            "Content-Type": "application/json"
-        }
+    if response.status_code == 201:
+        return jsonify({"message": "Lead successfully added to Zoho CRM"}), 201
+    else:
+        return jsonify({
+            "message": "Failed to add lead",
+            "zoho_response": response.text
+        }), 400
 
-        # Send lead to Zoho
-        response = requests.post(url, headers=headers, json=lead_data)
-
-        if response.status_code == 201:
-            return jsonify({"message": "Lead successfully created!"}), 201
-        else:
-            return jsonify({"error": response.json()}), response.status_code
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# Run the Flask app
 if __name__ == '__main__':
     app.run(debug=True)
