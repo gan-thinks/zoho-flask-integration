@@ -10,6 +10,10 @@ app = Flask(__name__)
 ZOHO_ACCESS_TOKEN = os.getenv("ZOHO_ACCESS_TOKEN")
 ZOHO_API_URL = "https://www.zohoapis.in/crm/v2/Leads"
 
+@app.route('/')
+def index():
+    return "Flask server is running!"
+
 @app.route('/webflow-form', methods=['POST'])
 def handle_webflow_form():
     data = request.form
@@ -51,7 +55,6 @@ def handle_webflow_form():
             "zoho_response": response.text
         }), 400
 
-# ✅ Single app.run for both local and render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port)
