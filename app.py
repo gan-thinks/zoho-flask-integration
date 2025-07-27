@@ -7,6 +7,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
+# Load Zoho OAuth token from environment
 ZOHO_ACCESS_TOKEN = os.getenv("ZOHO_ACCESS_TOKEN")
 ZOHO_API_URL = "https://www.zohoapis.in/crm/v2/Leads"
 
@@ -16,9 +17,12 @@ def index():
 
 @app.route('/webflow-form', methods=['POST'])
 def handle_webflow_form():
-    data = request.form
+    print("✅ Webflow form submitted")
 
-    # Extract all fields from Webflow form
+    data = request.form
+    print("📥 Raw form data received:", data)
+
+    # Extract fields (Make sure names match the Webflow input `name` attributes)
     form_data = {
         "First_Name": data.get("first-name"),
         "Last_Name": data.get("last-name"),
@@ -33,25 +37,31 @@ def handle_webflow_form():
         "Message": data.get("message")
     }
 
-    # Remove None values to avoid errors
-    clean_data = {k: v for k, v in form_data.items() if v is not None}
+    # Clean up None values
+    clean_data = {k: v for k, v in form_data.items() if v}
+    print("🧹 Cleaned form data:", clean_data)
 
-    zoho_payload = {
-        "data": [clean_data]
-    }
+    if not clean_data:
+        print("⚠️ No valid form fields found")
+        return jsonify({"message": "No valid fields submitted"}), 400
 
+    # Prepare Zoho CRM payload
+    zoho_payload = {"data": [clean_data]}
     headers = {
         "Authorization": f"Zoho-oauthtoken {ZOHO_ACCESS_TOKEN}",
         "Content-Type": "application/json"
     }
 
+    print("📤 Sending data to Zoho CRM...")
     response = requests.post(ZOHO_API_URL, headers=headers, json=zoho_payload)
 
+    print("📬 Zoho response:", response.status_code, response.text)
+
     if response.status_code == 201:
-        return jsonify({"message": "Lead successfully added to Zoho CRM"}), 201
+        return jsonify({"message": "✅ Lead added to Zoho CRM"}), 201
     else:
         return jsonify({
-            "message": "Failed to add lead",
+            "message": "❌ Failed to add lead to Zoho CRM",
             "zoho_response": response.text
         }), 400
 
